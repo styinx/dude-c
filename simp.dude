@@ -1,0 +1,74 @@
+a = 1
+b = 1'00
+b = 1.012
+b = 12.012
+b = 1'23.01e234
+b = 123'456.01234e+123
+c = 0b010101
+c = 0b0101'1010
+d = 0xA12356
+d = 0x1235'6AA1
+d1 = "asddas"
+d2 = 'a'
+d3 = true
+d4 = false
+d5 = nil
+d8 = a | b 
+d9 = a & b 
+d10 = a ~ b 
+d11 = a ^ b 
+d12 = a % b 
+d13 = a + b 
+d14 = a - b 
+d15 = a * b 
+d16 = a / b 
+d17 = a ** b 
+d18 = a // b 
+d19 = !a
+d20 = a < b 
+d20 = a > b 
+d20 = a || b 
+d20 = a && b 
+nop
+c = a + b
+foo = bar
+baz = foo + bar 
+ab += ba
+ba = [1,2,3]
+ba = [1:10:2]
+
+asm
+{
+
+}
+
+dat Point x, y end
+
+if i == 0
+elif i == 1
+else 
+end 
+
+for i in [1:10]
+  e1 = 0
+end
+
+while c < 5
+ e1 = 0
+ e2 = 0xA
+end
+
+fun foo(x, y)
+    ret c + x + y
+end
+
+mod
+  add = fun(a, b) ret a + b end
+end
+
+# Commy
+a = 0
+## blocky
+b = 0
+##
+c = 0
