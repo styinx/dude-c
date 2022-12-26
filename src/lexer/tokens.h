@@ -3,42 +3,56 @@
 
 typedef enum Token
 {
-    Undefined,
+    TKUndefined,
 
-    Comment,
+    TKComment,
 
-    NumericConstant,
-    BinaryConstant,
-    HexadecimalConstant,
-    DecimalConstant,
-    FloatConstant,
-    BooleanConstant,
-    NilConstant,
+    TKNumericConstant,
+    TKBinaryConstant,
+    TKHexadecimalConstant,
+    TKDecimalConstant,
+    TKFloatConstant,
+    TKBooleanConstant,
+    TKNilConstant,
 
-    Nop,
+    TKNop,
 
-    Asm,
+    TKAsm,
 
-    Identifier,
-    Keyword,
-    Operator,
+    TKIdentifier,
+    TKKeyword,
+    TKType,
+    
+    TKAssignment,
 
-    StringBorder,
-    CharacterBorder,
+    TKOperatorMultiplication,
+    TKOperatorDivision,
+    TKOperatorAddition,
+    TKOperatorSubtraction,
+    TKOperatorModulo,
+    TKOperatorAND,
+    TKOperatorOR,
+    TKOperatorXOR,
+    TKOperatorCOMP,
+    TKOperatorGreaterThan,
+    TKOperatorLessThan,
 
-    BlockBegin,
-    BlockEnd,
-    SliceBegin,
-    SliceEnd,
-    ExpressionBegin,
-    ExpressionEnd,
-    CommaSeparator,
-    ColonSeparator,
+    TKStringBorder,
+    TKCharacterBorder,
 
-    Empty,
+    TKBlockBegin,
+    TKBlockEnd,
+    TKSliceBegin,
+    TKSliceEnd,
+    TKExpressionBegin,
+    TKExpressionEnd,
+    TKCommaSeparator,
+    TKColonSeparator,
 
-    Invalid,
-    End,
+    TKEmpty,
+
+    TKInvalid,
+    TKEnd,
 } Token;
 
-#endif // HEADER_TOKENS
+#endif  // HEADER_TOKENS

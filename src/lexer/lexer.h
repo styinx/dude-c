@@ -28,8 +28,6 @@ bool isAlphaNumeric(char c);
 
 bool isHardTokenSeparator(char c);
 
-bool isKeyword(const char* word);
-
 bool isBoolean(const char* word);
 
 bool isNil(const char* word);

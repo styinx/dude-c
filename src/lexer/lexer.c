@@ -1,45 +1,33 @@
 #include "lexer.h"
+#include "keywords.h"
+#include "types.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 
-static const char* AS    = "as";
-static const char* DAT   = "dat";
-static const char* ELIF  = "elif";
-static const char* ELSE  = "else";
-static const char* END   = "end";
-static const char* FOR   = "for";
-static const char* FUN   = "fun";
-static const char* IF    = "if";
-static const char* IN    = "in";
-static const char* MOD   = "mod";
-static const char* RET   = "ret";
-static const char* WHILE = "while";
-static const char* USE   = "use";
-
 bool isNumeric(char c)
 {
-    return c >= '0' && c <= '9';
+    return c >= SYMZero && c <= SYMNine;
 }
 
 bool isHexDigit(char c)
 {
-    return isNumeric(c) || (c >= 'A' && c <= 'F');
+    return isNumeric(c) || (c >= SYMBigA && c <= SYMBigF);
 }
 
 bool isBinaryDigit(char c)
 {
-    return c == '0' || c == '1';
+    return c == SYMZero || c == SYMOne;
 }
 
 bool isSmallAlpha(char c)
 {
-    return c >= 'a' && c <= 'z';
+    return c >= SYMSmallA && c <= SYMSmallZ;
 }
 
 bool isBigAlpha(char c)
 {
-    return c >= 'A' && c <= 'Z';
+    return c >= SYMBigA && c <= SYMBigZ;
 }
 
 bool isAlpha(char c)
@@ -54,16 +42,7 @@ bool isAlphaNumeric(char c)
 
 bool isHardTokenSeparator(char c)
 {
-    return c == Space || c == Newline;
-}
-
-bool isKeyword(const char* word)
-{
-    return strcmp(word, AS) == 0 || strcmp(word, DAT) == 0 || strcmp(word, ELIF) == 0 ||
-           strcmp(word, ELSE) == 0 || strcmp(word, END) == 0 || strcmp(word, FOR) == 0 ||
-           strcmp(word, FUN) == 0 || strcmp(word, IF) == 0 || strcmp(word, IN) == 0 ||
-           strcmp(word, MOD) == 0 || strcmp(word, RET) == 0 || strcmp(word, WHILE) == 0 ||
-           strcmp(word, USE) == 0;
+    return c == SYMSpace || c == SYMNewline;
 }
 
 bool isBoolean(const char* word)
@@ -135,7 +114,7 @@ void consumeChar(Lexer* lexer)
 
 bool initializeLexer(Lexer* lexer, const char* filename)
 {
-    lexer->tok                           = Undefined;
+    lexer->tok                           = TKUndefined;
     lexer->c                             = '\0';
     lexer->col                           = 0;
     lexer->line                          = 1;
@@ -159,7 +138,7 @@ bool finalizeLexer(Lexer* lexer)
 
 Token tokenize(Lexer* lexer)
 {
-    lexer->tok                           = Undefined;
+    lexer->tok                           = TKUndefined;
     lexer->context.floatPeriodRead       = false;
     lexer->context.lastIsSingleQuote     = false;
     lexer->context.lastIsDigit           = false;
@@ -172,17 +151,17 @@ Token tokenize(Lexer* lexer)
 
     while(lexer->c != EOF)
     {
-        if(lexer->c == Newline)
+        if(lexer->c == SYMNewline)
         {
             lexer->context.isComment = false;
 
             lexer->col = 0;
             lexer->line += 1;
             memset(lexer->dbgLine, 0, 255);
-            lexer->tok = Empty;
+            lexer->tok = TKEmpty;
             return lexer->tok;
         }
-        else if(lexer->c == NumberSign)
+        else if(lexer->c == SYMNumberSign)
         {
             // Block comment handling
             if(lexer->context.lastIsComment)
@@ -200,83 +179,93 @@ Token tokenize(Lexer* lexer)
 
             lexer->context.lastIsComment = true;
 
-            return eatToken(lexer, Comment);
+            return eatToken(lexer, TKComment);
         }
 
         lexer->context.lastIsComment = false;
 
         if(lexer->context.isComment || lexer->context.isBlockComment)
         {
-            lexer->tok = Comment;
+            lexer->tok = TKComment;
             return lexer->tok;
         }
 
         switch(lexer->c)
         {
             // Valid control characters
-            case AtSign:
-            case DollarSign:
-            case Period:
-                return eatToken(lexer, Undefined);
+            case SYMAtSign:
+            case SYMDollarSign:
+            case SYMPeriod:
+                return eatToken(lexer, TKUndefined);
 
-            // Valid operator characters
-            case Ampersand:
-            case Asterisk:
-            case Circumflex:
-            case EqualSign:
-            case ExclamationMark:
-            case GreaterThanSign:
-            case LessThanSign:
-            case MinusSign:
-            case PercentSign:
-            case PlusSign:
-            case QuestionMark:
-            case Slash:
-            case Tilde:
-            case VerticalBar:
-                return eatToken(lexer, Operator);
+            case SYMEqualSign:
+                return eatToken(lexer, TKAssignment);
+
+            // Operator characters
+            case SYMAsterisk:
+                return eatToken(lexer, TKOperatorMultiplication);
+            case SYMSlash:
+                return eatToken(lexer, TKOperatorDivision);
+            case SYMPlusSign:
+                return eatToken(lexer, TKOperatorAddition);
+            case SYMMinusSign:
+                return eatToken(lexer, TKOperatorDivision);
+            case SYMPercentSign:
+                return eatToken(lexer, TKOperatorModulo);
+            case SYMAmpersand:
+                return eatToken(lexer, TKOperatorAND);
+            case SYMVerticalBar:
+                return eatToken(lexer, TKOperatorOR);
+            case SYMCircumflex:
+                return eatToken(lexer, TKOperatorXOR);
+            case SYMTilde:
+                return eatToken(lexer, TKOperatorCOMP);
+            case SYMGreaterThanSign:
+                return eatToken(lexer, TKOperatorGreaterThan);
+            case SYMLessThanSign:
+                return eatToken(lexer, TKOperatorLessThan);
 
             // String constant
-            case DoubleQuote:
-                return eatToken(lexer, StringBorder);
+            case SYMDoubleQuote:
+                return eatToken(lexer, TKStringBorder);
 
             // Character constant
-            case SingleQuote:
-                return eatToken(lexer, CharacterBorder);
+            case SYMSingleQuote:
+                return eatToken(lexer, TKCharacterBorder);
 
             // Block
-            case CurlyBracesOpen:
-                return eatToken(lexer, BlockBegin);
-            case CurlyBracesClose:
-                return eatToken(lexer, BlockEnd);
+            case SYMCurlyBracesOpen:
+                return eatToken(lexer, TKBlockBegin);
+            case SYMCurlyBracesClose:
+                return eatToken(lexer, TKBlockEnd);
 
             // Expression
-            case ParenthesisOpen:
-                return eatToken(lexer, ExpressionBegin);
-            case ParenthesisClose:
-                return eatToken(lexer, ExpressionEnd);
+            case SYMParenthesisOpen:
+                return eatToken(lexer, TKExpressionBegin);
+            case SYMParenthesisClose:
+                return eatToken(lexer, TKExpressionEnd);
 
             // Separators
-            case Comma:
-                return eatToken(lexer, CommaSeparator);
-            case Colon:
-                return eatToken(lexer, ColonSeparator);
+            case SYMComma:
+                return eatToken(lexer, TKCommaSeparator);
+            case SYMColon:
+                return eatToken(lexer, TKColonSeparator);
 
             // Slice
-            case BracketOpen:
-                return eatToken(lexer, SliceBegin);
-            case BracketClose:
-                return eatToken(lexer, SliceBegin);
+            case SYMBracketOpen:
+                return eatToken(lexer, TKSliceBegin);
+            case SYMBracketClose:
+                return eatToken(lexer, TKSliceBegin);
 
             // Hard Token separation
-            case Space:
-                lexer->tok = Empty;
+            case SYMSpace:
+                lexer->tok = TKEmpty;
                 return lexer->tok;
 
             default:
                 if(isAlphaNumeric(lexer->c))
                 {
-                    if(lexer->tok == Undefined)
+                    if(lexer->tok == TKUndefined)
                     {
                         if(isNumeric(lexer->c))
                             return tokenizeNumericConstant(lexer);
@@ -293,13 +282,13 @@ Token tokenize(Lexer* lexer)
         next(lexer);
     }
 
-    lexer->tok = End;
+    lexer->tok = TKEnd;
     return lexer->tok;
 }
 
 Token tokenizeIdentifier(Lexer* lexer)
 {
-    lexer->tok = Identifier;
+    lexer->tok = TKIdentifier;
 
     consumeChar(lexer);
 
@@ -307,15 +296,17 @@ Token tokenizeIdentifier(Lexer* lexer)
         consumeChar(lexer);
 
     if(isKeyword(lexer->word))
-        lexer->tok = Keyword;
+        lexer->tok = TKKeyword;
+    else if(isType(lexer->word))
+        lexer->tok = TKType;
     else if(isBoolean(lexer->word))
-        lexer->tok = BooleanConstant;
+        lexer->tok = TKBooleanConstant;
     else if(isNil(lexer->word))
-        lexer->tok = NilConstant;
+        lexer->tok = TKNilConstant;
     else if(isNop(lexer->word))
-        lexer->tok = Nop;
+        lexer->tok = TKNop;
     else if(isAsm(lexer->word))
-        lexer->tok = Asm;
+        lexer->tok = TKAsm;
 
     previous(lexer);
     return lexer->tok;
@@ -327,7 +318,7 @@ Token tokenizeIdentifier(Lexer* lexer)
 
 bool isNumberSeparatorAtStart(Lexer* lexer)
 {
-    if(lexer->c == SingleQuote)
+    if(lexer->c == SYMSingleQuote)
     {
         lexError(lexer, "Digit separators at start of number");
         return true;
@@ -337,7 +328,7 @@ bool isNumberSeparatorAtStart(Lexer* lexer)
 
 bool isNumberSeparatorAtEnd(Lexer* lexer)
 {
-    if(lexer->word[strlen(lexer->word) - 1] == SingleQuote)
+    if(lexer->word[strlen(lexer->word) - 1] == SYMSingleQuote)
     {
         lexer->c = lexer->word[strlen(lexer->word) - 1];
         previous(lexer);
@@ -349,7 +340,7 @@ bool isNumberSeparatorAtEnd(Lexer* lexer)
 
 bool isNumberSeparatorDuplication(Lexer* lexer)
 {
-    if(lexer->c == SingleQuote)
+    if(lexer->c == SYMSingleQuote)
     {
         if(lexer->context.lastIsSingleQuote)
         {
@@ -370,15 +361,15 @@ bool isNumberSeparatorDuplication(Lexer* lexer)
 
 Token tokenizeNumericConstant(Lexer* lexer)
 {
-    lexer->tok = NumericConstant;
+    lexer->tok = TKNumericConstant;
 
     consumeChar(lexer);
 
-    if(lexer->c == 'b')
+    if(lexer->c == SYMSmallB)
         lexer->tok = tokenizeBinaryConstant(lexer);
-    else if(lexer->c == 'x')
+    else if(lexer->c == SYMSmallX)
         lexer->tok = tokenizeHexadecimalConstant(lexer);
-    else if(isNumeric(lexer->c) || lexer->c == Period || lexer->c == SingleQuote)
+    else if(isNumeric(lexer->c) || lexer->c == SYMPeriod || lexer->c == SYMSingleQuote)
         lexer->tok = tokenizeDecimalOrFloatConstant(lexer);
     else if(lexer->c == EOF)
         return lexer->tok;
@@ -390,7 +381,7 @@ Token tokenizeNumericConstant(Lexer* lexer)
 
 Token tokenizeBinaryConstant(Lexer* lexer)
 {
-    lexer->tok = BinaryConstant;
+    lexer->tok = TKBinaryConstant;
 
     // 'b'
     consumeChar(lexer);
@@ -400,7 +391,7 @@ Token tokenizeBinaryConstant(Lexer* lexer)
         return lexer->tok;
     }
 
-    while(isBinaryDigit(lexer->c) || lexer->c == SingleQuote)
+    while(isBinaryDigit(lexer->c) || lexer->c == SYMSingleQuote)
     {
         if(isNumberSeparatorDuplication(lexer))
         {
@@ -421,7 +412,7 @@ Token tokenizeBinaryConstant(Lexer* lexer)
 
 Token tokenizeHexadecimalConstant(Lexer* lexer)
 {
-    lexer->tok = HexadecimalConstant;
+    lexer->tok = TKHexadecimalConstant;
 
     // 'x'
     consumeChar(lexer);
@@ -431,7 +422,7 @@ Token tokenizeHexadecimalConstant(Lexer* lexer)
         return lexer->tok;
     }
 
-    while(isHexDigit(lexer->c) || lexer->c == SingleQuote)
+    while(isHexDigit(lexer->c) || lexer->c == SYMSingleQuote)
     {
         if(isNumberSeparatorDuplication(lexer))
         {
@@ -452,12 +443,12 @@ Token tokenizeHexadecimalConstant(Lexer* lexer)
 
 Token tokenizeDecimalOrFloatConstant(Lexer* lexer)
 {
-    lexer->tok = DecimalConstant;
+    lexer->tok = TKDecimalConstant;
 
-    while(isNumeric(lexer->c) || lexer->c == Period || lexer->c == SingleQuote ||
-          lexer->c == SmallE || lexer->c == PlusSign || lexer->c == MinusSign)
+    while(isNumeric(lexer->c) || lexer->c == SYMPeriod || lexer->c == SYMSingleQuote ||
+          lexer->c == SYMSmallE || lexer->c == SYMPlusSign || lexer->c == SYMMinusSign)
     {
-        if(lexer->c == Period)
+        if(lexer->c == SYMPeriod)
         {
             if(isNumberSeparatorAtEnd(lexer))
             {
@@ -467,14 +458,14 @@ Token tokenizeDecimalOrFloatConstant(Lexer* lexer)
             if(!lexer->context.floatPeriodRead)
             {
                 lexer->context.floatPeriodRead = true;
-                lexer->tok                     = FloatConstant;
+                lexer->tok                     = TKFloatConstant;
             }
             else
             {
                 return lexError(lexer, "Multiple periods in floating point number");
             }
         }
-        else if(lexer->c == SingleQuote)
+        else if(lexer->c == SYMSingleQuote)
         {
             if(lexer->context.lastIsSingleQuote)
             {
@@ -488,9 +479,9 @@ Token tokenizeDecimalOrFloatConstant(Lexer* lexer)
                 lexer->context.lastIsSingleQuote = true;
             }
         }
-        else if(lexer->c == SmallE)
+        else if(lexer->c == SYMSmallE)
         {
-            if(lexer->tok == DecimalConstant)
+            if(lexer->tok == TKDecimalConstant)
                 return lexError(lexer, "Exponent in decimal number");
 
             if(lexer->context.floatExponentRead)
@@ -502,9 +493,9 @@ Token tokenizeDecimalOrFloatConstant(Lexer* lexer)
             lexer->context.floatExponentRead = true;
             lexer->context.lastIsExponent    = true;
         }
-        else if(lexer->c == PlusSign || lexer->c == MinusSign)
+        else if(lexer->c == SYMPlusSign || lexer->c == SYMMinusSign)
         {
-            if(lexer->tok == DecimalConstant)
+            if(lexer->tok == TKDecimalConstant)
                 return lexError(lexer, "Sign in decimal number");
 
             if(lexer->context.floatExponentSignRead)
@@ -522,9 +513,9 @@ Token tokenizeDecimalOrFloatConstant(Lexer* lexer)
 
         if(!isNumeric(lexer->c))
             lexer->context.lastIsDigit = false;
-        if(lexer->c != SingleQuote)
+        if(lexer->c != SYMSingleQuote)
             lexer->context.lastIsSingleQuote = false;
-        if(lexer->c != SmallE)
+        if(lexer->c != SYMSmallE)
             lexer->context.lastIsExponent = false;
 
         consumeChar(lexer);
@@ -559,7 +550,7 @@ Token lexError(Lexer* lexer, const char* fmt, ...)
     printf("%*c%s\n", 10, ' ', lexer->dbgLine);
     printf("%*c\n\n", 10 + lexer->col, '^');
 
-    lexer->tok = Invalid;
+    lexer->tok = TKInvalid;
     return lexer->tok;
 }
 
@@ -567,70 +558,96 @@ const char* tokenToString(Token tok)
 {
     switch(tok)
     {
-        case Undefined:
-            return "Undefined";
+        case TKUndefined:
+            return "TKUndefined";
 
-        case Comment:
-            return "Comment";
+        case TKComment:
+            return "TKComment";
 
-        case NumericConstant:
-            return "NumericConstant";
-        case BinaryConstant:
-            return "BinaryConstant";
-        case HexadecimalConstant:
-            return "HexadecimalConstant";
-        case DecimalConstant:
-            return "DecimalConstant";
-        case FloatConstant:
-            return "FloatConstant";
-        case BooleanConstant:
-            return "BooleanConstant";
-        case NilConstant:
-            return "NilConstant";
+        case TKNumericConstant:
+            return "TKNumericConstant";
+        case TKBinaryConstant:
+            return "TKBinaryConstant";
+        case TKHexadecimalConstant:
+            return "TKHexadecimalConstant";
+        case TKDecimalConstant:
+            return "TKDecimalConstant";
+        case TKFloatConstant:
+            return "TKFloatConstant";
+        case TKBooleanConstant:
+            return "TKBooleanConstant";
+        case TKNilConstant:
+            return "TKNilConstant";
 
-        case Nop:
-            return "Nop";
+        case TKNop:
+            return "TKNop";
 
-        case Asm:
-            return "Asm";
+        case TKAsm:
+            return "TKAsm";
 
-        case Identifier:
-            return "Identifier";
-        case Keyword:
-            return "Keyword";
-        case Operator:
-            return "Operator";
+        case TKIdentifier:
+            return "TKIdentifier";
+        case TKKeyword:
+            return "TKKeyword";
+        case TKType:
+            return "TKType";
 
-        case StringBorder:
-            return "StringBorder";
-        case CharacterBorder:
-            return "CharacterBorder";
+        case TKAssignment:
+            return "TKAssignment";
 
-        case BlockBegin:
-            return "BlockBegin";
-        case BlockEnd:
-            return "BlockEnd";
-        case SliceBegin:
-            return "SliceBegin";
-        case SliceEnd:
-            return "SliceEnd";
-        case ExpressionBegin:
-            return "ExpressionBegin";
-        case ExpressionEnd:
-            return "ExpressionEnd";
-        case ColonSeparator:
-            return "ColonSeparator";
-        case CommaSeparator:
-            return "CommaSeparator";
+        case TKOperatorMultiplication:
+            return "TKOperatorMultiplication";
+        case TKOperatorDivision:
+            return "TKOperatorDivision";
+        case TKOperatorAddition:
+            return "TKOperatorAddition";
+        case TKOperatorSubtraction:
+            return "TKOperatorSubtraction";
+        case TKOperatorModulo:
+            return "TKOperatorModulo";
+        case TKOperatorAND:
+            return "TKOperatorAND";
+        case TKOperatorOR:
+            return "TKOperatorOR";
+        case TKOperatorXOR:
+            return "TKOperatorXOR";
+        case TKOperatorCOMP:
+            return "TKOperatorCOMP";
+        case TKOperatorGreaterThan:
+            return "TKOperatorGreaterThan";
+        case TKOperatorLessThan:
+            return "TKOperatorLessThan";
 
-        case Empty:
-            return "Empty";
+        case TKStringBorder:
+            return "TKStringBorder";
+        case TKCharacterBorder:
+            return "TKCharacterBorder";
 
-        case Invalid:
-            return "Invalid";
-        case End:
-            return "End";
+        case TKBlockBegin:
+            return "TKBlockBegin";
+        case TKBlockEnd:
+            return "TKBlockEnd";
+        case TKSliceBegin:
+            return "TKSliceBegin";
+        case TKSliceEnd:
+            return "TKSliceEnd";
+        case TKExpressionBegin:
+            return "TKExpressionBegin";
+        case TKExpressionEnd:
+            return "TKExpressionEnd";
+        case TKColonSeparator:
+            return "TKColonSeparator";
+        case TKCommaSeparator:
+            return "TKCommaSeparator";
+
+        case TKEmpty:
+            return "TKEmpty";
+
+        case TKInvalid:
+            return "TKInvalid";
+        case TKEnd:
+            return "TKEnd";
         default:
-            return "UNKOWN TOKEN (TODO: add it!)";
+            return "TKUNKOWN TOKEN (TODO: add it!)";
     }
 }
