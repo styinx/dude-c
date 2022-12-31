@@ -59,13 +59,16 @@ typedef struct Context
     bool floatExponentSignRead;
 } Context;
 
+#define MAX_IDENTIFIER_LENGTH 255
+#define LINE_LENGTH 255
+
 typedef struct Lexer
 {
     FILE*    input;
     unsigned col;
     unsigned line;
-    char     dbgLine[255];
-    char     word[255];
+    char     dbgLine[LINE_LENGTH];
+    char     word[MAX_IDENTIFIER_LENGTH];
     Token    tok;
     char     c;
     Context  context;

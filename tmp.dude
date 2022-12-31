@@ -1,3 +1,5 @@
 a : S32 = 100
+
 nop
-dat Point x: U8, y end
+dat Point x: U8, y: S16 end
+f : F = fun(a: S64, b: Bool) b : U8 = 0 c : F = fun(x : Bool) d : Bool = false end end

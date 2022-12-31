@@ -2,7 +2,7 @@ CC = clang
 BIN = dude.exe
 PATHSEP = \\
 BUILDDIR = build
-SRC = src/main.c src/lexer/lexer.c src/parser/parser.c
+SRC = src/main.c src/lexer/lexer.c src/lexer/keywords.c src/lexer/types.c src/parser/parser.c
 OBJ = $(subst /,\, $(SRC:%.c=$(BUILDDIR)/%.o))
 CFLAGS = -Wall -g
 

@@ -1,4 +1,6 @@
 a = 1
+a : S32 = 100
+a : U8 = 0xFF
 b = 1'00
 b = 1.012
 b = 12.012
@@ -15,7 +17,7 @@ d4 = false
 d5 = nil
 d8 = a | b 
 d9 = a & b 
-d10 = a ~ b 
+d10 = ~b 
 d11 = a ^ b 
 d12 = a % b 
 d13 = a + b 
@@ -24,11 +26,14 @@ d15 = a * b
 d16 = a / b 
 d17 = a ** b 
 d18 = a // b 
-d19 = !a
+d19 = not a
 d20 = a < b 
+d20 = a <= b 
 d20 = a > b 
-d20 = a || b 
-d20 = a && b 
+d20 = a >= b 
+d20 = a is b 
+d20 = a or b 
+d20 = a and b 
 nop
 c = a + b
 foo = bar

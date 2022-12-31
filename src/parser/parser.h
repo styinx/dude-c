@@ -12,27 +12,43 @@
 typedef enum ASTState
 {
     ASTUndefined,
+    ASTHelper,
 
     ASTNopStatement,
 
     ASTAssignmentStatement,
-    ASTAssignmentStatementColon,
-    ASTAssignmentStatementType,
     ASTAssignmentStatementAssign,
+    ASTAssignmentStatementValue,
 
     ASTDatStatement,
     ASTDatStatementName,
     ASTDatStatementIdentifier,
-    ASTDatStatementIdentifierColon,
-    ASTDatStatementIdentifierType,
-    ASTDatStatementIdentifierComma,
 
-    ASTInvalid
+    ASTFunStatement,
+    ASTFunStatementName,
+    ASTFunStatementArgs,
+    ASTFunStatementComma,
+    ASTFunStatementEnd,
+
+    ASTVariableWithTypeName,
+    ASTVariableWithTypeColon,
+    ASTVariableWithTypeType,
+
+    // ASTVariableOptionalTypeName, // TODO non-deterministic state (look ahead)
+    // ASTVariableOptionalTypeColon,
+    // ASTVariableOptionalTypeType,
+
+    ASTInvalid,
+    ASTEnd
 } ASTState;
+
+#define MAX_SCOPES 64
 
 typedef struct Parser
 {
     ASTState state;
+    ASTState stack[MAX_SCOPES];
+    unsigned char scope;
 } Parser;
 
 void initializeParser(Parser* parser);

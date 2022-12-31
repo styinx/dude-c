@@ -145,7 +145,7 @@ Token tokenize(Lexer* lexer)
     lexer->context.lastIsExponent        = false;
     lexer->context.floatExponentRead     = false;
     lexer->context.floatExponentSignRead = false;
-    memset(lexer->word, 0, 255);
+    memset(lexer->word, 0, MAX_IDENTIFIER_LENGTH);
 
     next(lexer);
 
@@ -157,7 +157,7 @@ Token tokenize(Lexer* lexer)
 
             lexer->col = 0;
             lexer->line += 1;
-            memset(lexer->dbgLine, 0, 255);
+            memset(lexer->dbgLine, 0, LINE_LENGTH);
             lexer->tok = TKEmpty;
             return lexer->tok;
         }
@@ -371,8 +371,8 @@ Token tokenizeNumericConstant(Lexer* lexer)
         lexer->tok = tokenizeHexadecimalConstant(lexer);
     else if(isNumeric(lexer->c) || lexer->c == SYMPeriod || lexer->c == SYMSingleQuote)
         lexer->tok = tokenizeDecimalOrFloatConstant(lexer);
-    else if(lexer->c == EOF)
-        return lexer->tok;
+    else if(lexer->c == EOF || lexer->c == SYMNewline || lexer->c == SYMSpace)
+        lexer->tok = TKDecimalConstant;
     else
         previous(lexer);
 

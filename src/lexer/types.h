@@ -15,6 +15,7 @@ static const char* S32  = "S32";
 static const char* S64  = "S64";
 static const char* F32  = "F32";
 static const char* F64  = "F64";
+static const char* F    = "F";
 
 bool isType(const char* word);
 
